@@ -1,0 +1,32 @@
+{% extends 'base_generic.html' %}
+
+{% block content %}
+  <h1>{{ user.username }}'s Stock Portfolio</h1>
+  {% if user_portfolios %}
+    <a href="{% url 'stock_operations' %}">Stock Operations</a>
+    <table>
+      <thead>
+        <tr>
+          <th>Symbol</th>
+          <th>Shares Owned</th>
+          <th>Purchase Price</th>
+          <th>Created At</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for portfolio in user_portfolios %}
+          <tr>
+            <td>{{ portfolio.symbol }}</td>
+            <td>{{ portfolio.shares_owned }}</td>
+            <td>{{ portfolio.purchase_price }}</td>
+            <td>{{ portfolio.created_at }}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% else %}
+    <a href="{% url 'stock_operations' %}">Stock Operations</a>
+    <p>You don't have any stocks in your portfolio.</p>
+  {% endif %}
+  <a href="{% url 'logout' %}">Logout</a>
+{% endblock %}

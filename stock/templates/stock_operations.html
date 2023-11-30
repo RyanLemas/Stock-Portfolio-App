@@ -1,0 +1,136 @@
+{% extends 'base_generic.html' %}
+
+{% block content %}
+  <h1>{{ user.username }}'s Stock Portfolio</h1>
+
+  <form method="post" action="{% url 'stock_operations' %}" id="stockForm" onclick="intentSelected()">
+    {% csrf_token %}
+    <label for="intent">Choose an operation:</label>
+    <select name="intent" id="intentSelect">
+      <option value="" selected disabled>Choose an operation</option>
+      <option value="1">Add new stock to portfolio</option>
+      <option value="2">Remove Stock from portfolio</option>
+      <option value="3">Should you buy stock</option>
+      <option value="4">Fetch and store stock data</option>
+      <option value="5">View saved stock data</option>
+    </select>
+ 
+    <div id="addStockFields" style="display: none;">
+      <label for="new_stock_add">New Stock Symbol:</label>
+      <input type="text" name="new_stock_add" id ="new_stock_add" required>
+      <label for="new_stock_shares">Number of Shares:</label>
+      <input type="number" name="new_stock_shares" id="new_stock_shares" required>
+      <label for="new_stock_price">Purchase Price:</label>
+      <input type="number" name="new_stock_price" id="new_stock_price" required>
+    </div>
+
+    <div id="removeStock" style="display: none;">
+      <label for="remove_stock">Stock to remove:</label>
+      <input type="text" name="remove_stock" id="remove_stock" required>
+      <label for="stock_amount">Amount of Shares to remove:</label>
+      <input type="text" name="stock_amount" id="stock_amount" required>
+    </div>
+
+    <div id="shouldYouBuy" style="display: none;">
+      <label for="new_stock_buy">New Stock Symbol:</label>
+      <input type="text" name="new_stock_buy" id ="new_stock_buy" required>
+    </div>
+
+    <div id="fetchAndStore" style="display: none;">
+      <label for="new_stock_fetch">New Stock Symbol:</label>
+      <input type="text" name="new_stock_fetch" id="new_stock_fetch" required>
+    </div>
+
+    <div id="savedData" style="display: none;">
+      <label for="stock_save">Saved data of Stock:</label>
+      <input type="text" name="stock_save" id="stock_save" required>
+    </div>
+
+    <button type="submit" onclick="submitForm(event)">Submit</button>
+  </form>
+  
+  <div id="resultContainer">
+    
+  </div>
+
+
+  <a href="{% url 'portfolio_list' %}">Portfolio</a>
+  <a href="{% url 'logout' %}">Logout</a>
+
+  <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+
+  <script>
+    function intentSelected() {
+      const intentSelect = document.getElementById('intentSelect');
+      const addStockFields = document.getElementById('addStockFields');
+      const removeStock = document.getElementById('removeStock');
+      const shouldYouBuy = document.getElementById('shouldYouBuy');
+      const fetchAndStore = document.getElementById('fetchAndStore');
+      const savedData = document.getElementById('savedData');
+      const stockForm = document.getElementById('stockForm');
+      let selectedIntent = intentSelect.value;
+  
+      intentSelect.addEventListener('change', function() {
+        selectedIntent = this.value; // update the value of selectedIntent
+  
+        console.log('Selected Intent in change event:', selectedIntent);
+  
+        addStockFields.style.display = 'none';
+        removeStock.style.display = 'none';
+        shouldYouBuy.style.display = 'none';
+        fetchAndStore.style.display = 'none';
+        savedData.style.display = 'none';
+  
+        if (selectedIntent === '1') {
+          addStockFields.style.display = 'block';
+        }else if(selectedIntent === '2'){
+          removeStock.style.display = 'block';
+        }else if(selectedIntent === '3'){
+          shouldYouBuy.style.display = 'block';
+        }else if(selectedIntent === '4'){
+          fetchAndStore.style.display = 'block';
+        }else if(selectedIntent === '5'){
+          savedData.style.display = 'block';
+        }
+      });
+
+    }
+
+    function submitForm(event) {
+      event.preventDefault();
+      const intentSelect = document.getElementById('intentSelect');
+      const selectedIntent = intentSelect.value;
+      console.log('Selected Intent:', selectedIntent);
+      
+      const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+
+      const formData = new FormData(document.getElementById('stockForm'));
+      formData.append('intent', selectedIntent);
+
+      console.log("form data = " + JSON.stringify(formData));
+      
+      $.ajax({
+        type: "POST",
+        url: "{% url 'stock_operations' %}",
+        data: formData,
+        contentType: false,
+        processData: false,
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest',
+            'X-CSRFToken': csrftoken
+        },
+        success: function (response) {
+            console.log(response);
+            $('#resultContainer').html(`<p>${response.result}</p>`);
+        },
+        error: function (error) {
+            console.error(error);
+        },
+      });
+    }
+  </script>
+
+
+  
+  
+{% endblock %}
